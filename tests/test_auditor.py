@@ -89,8 +89,7 @@ class TestAuditLog:
         assert len(api_entries) == 2
         assert all(e.service == "api" for e in api_entries)
 
-    def test_record_returns_entry(self, audit_log: AuditLog):
-        entry = audit_log.record("svc", "dry_run", "dry_run", operator="ci")
-        assert isinstance(entry, AuditEntry)
-        assert entry.service == "svc"
-        assert entry.status == "dry_run"
+    def test_read_service_returns_empty_for_unknown_service(self, audit_log: AuditLog):
+        audit_log.record("api", "deploy", "success", operator="alice")
+        entries = audit_log.read_service("nonexistent")
+        assert entries == []
