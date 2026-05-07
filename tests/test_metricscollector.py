@@ -70,6 +70,11 @@ class TestMetricsCollector:
         with pytest.raises(MetricsError):
             collector.record("", 1.0)
 
+    def test_negative_value_raises(self, collector):
+        """Recording a negative metric value should raise MetricsError."""
+        with pytest.raises(MetricsError):
+            collector.record("deploy.ok", -1.0)
+
     def test_labels_stored_on_sample(self, collector):
         collector.record("deploy", 1.0, labels={"env": "staging", "svc": "web"})
         sample = collector.by_name("deploy")[0]
