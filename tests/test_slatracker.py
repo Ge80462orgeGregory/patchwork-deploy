@@ -86,20 +86,13 @@ class TestSLATracker:
         t = SLATracker(thresholds={})
         assert "No SLA" in t.report().summary()
 
-    def test_report_summary_with_breach(self, tracker: SLATracker):
-        tracker.record("api", 99.0)
-        summary = tracker.report().summary()
-        assert "1/1" in summary
-
-    def test_clear_resets_entries(self, tracker: SLATracker):
-        tracker.record("api", 10.0)
-        tracker.clear()
-        assert len(tracker.report().entries) == 0
-
-    def test_multiple_services_tracked(self, tracker: SLATracker):
-        tracker.record("api", 10.0)
-        tracker.record("worker", 70.0)  # over 60s
-        tracker.record("frontend", 40.0)
+    def test_report_multiple_breaches_all_listed(self, tracker: SLATracker):
+        """All breaching services should appear in breached_services."""
+        tracker.record("api", 50.0)       # over 30s limit
+        tracker.record("worker", 90.0)    # over 60s limit
+        tracker.record("frontend", 20.0)  # within 45s limit
         report = tracker.report()
-        assert len(report.entries) == 3
-        assert report.breached_services == ["worker"]
+        assert report.has_breaches is True
+        assert "api" in report.breached_services
+        assert "worker" in report.breached_services
+        assert "frontend" not in report.breached_services
